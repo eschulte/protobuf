@@ -77,6 +77,7 @@ void EnumFieldGenerator::GenerateSlot(io::Printer* printer) const {
       variables_,
       "($name$\n"
       " :accessor $name$\n"
+      " :initarg :$name$\n"
       " :initform $package$::$default$\n"
       " :type $package$::$type$)\n");
 }

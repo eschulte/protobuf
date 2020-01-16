@@ -244,6 +244,32 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   printer->Outdent();
   printer->Print("\n");
 
+  // Ensure field initialized with :initarg are recorded.
+  printer->Print(
+      vars,
+      "(cl:defmethod cl:initialize-instance :after\n"
+      "  ((self $classname$) &key\n");
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    vars["name"] = FieldName(field);
+    printer->Print(
+      vars,
+      "                  ($name$ nil $name$-p)\n");
+  }
+  printer->Print("                  )\n");
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    vars["name"] = FieldName(field);
+    vars["index"] = SimpleItoa(field->index());
+    printer->Print(
+      vars,
+      "  (cl:when $name$-p\n"
+      "    (cl:setf (cl:ldb (cl:byte 1 $index$) "
+      "(cl:slot-value self '%has-bits%)) 1))\n");
+  }
+  printer->Print("  )");
+
   // Export the class.
   printer->Print(
       vars,
